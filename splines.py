@@ -37,7 +37,7 @@ def cubic(points: list[tuple[int, int]], boundary_condition=BoundaryConditions.N
 
         system[offset, offset:offset + 3] = [end_x -
                                              start_x, (end_x-start_x)**2, (end_x-start_x)**3]
-        rhs[1 + offset] = end_y - start_y
+        rhs[offset] = end_y - start_y
         if spline_index < num_splines - 1:
             # Splines must be differentiable (1st derivative)
             system[offset + 1, offset:offset + 3] = [1,
@@ -53,9 +53,9 @@ def cubic(points: list[tuple[int, int]], boundary_condition=BoundaryConditions.N
         else:
             match (boundary_condition):
                 case BoundaryConditions.Natural:
-                    # Second derivative at end conditions is 0
-                    system[offset + 2, offset:offset + 3] = [0, 2, 0]
-                    rhs[offset + 2] = 0
+                    # Second derivative at end conditions is 0s
+                    system[offset + 1, 0:3] = [0, 2, 0]
+                    rhs[offset + 1] = 0
 
                     system[offset + 2, offset:offset +
                            3] = [0, 2, 6 * (end_x-start_x)]
@@ -64,6 +64,7 @@ def cubic(points: list[tuple[int, int]], boundary_condition=BoundaryConditions.N
                 case _:
                     raise NotImplementedError(
                         "Only natural boundary conditions are supported")
+    print(system, rhs)
     solution = gaussian_elimination(system, rhs)
     return np.concatenate((a_terms[:, None], solution.reshape((num_splines, 3))), axis=1)
 
@@ -105,7 +106,7 @@ def gaussian_elimination(matrix: np.ndarray, rhs: np.ndarray) -> np.ndarray:
 
         augmented_matrix[:, row_index] = augmented_matrix[:,
                                                           row_index] * solution[row_index]
-        augmented_matrix[:, -1] -= augmented_matrix[:, row_index]
+        augmented_matrix[:, -1] = augmented_matrix[:, -1] - augmented_matrix[:, row_index]
     return solution
 
 
@@ -117,7 +118,7 @@ def tests():
         [0, 3, 0, -1, 0],
         [0, 0, 0, 2, 6]
     ], dtype=np.float64), np.array([1, 2, 0, 0, 0], dtype=np.float64)).all() == np.array([3/4, 3/2, 3/4, 1/4, -1/4], dtype=np.float64).all()
-
+    
 
 if __name__ == "__main__":
     tests()
