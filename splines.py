@@ -64,6 +64,7 @@ def cubic(points: list[tuple[int, int]], boundary_condition=BoundaryConditions.N
                 case _:
                     raise NotImplementedError(
                         "Only natural boundary conditions are supported")
+                    # Use https://en.wikipedia.org/wiki/Spline_interpolation#Introduction to find the rest
     print(system, rhs)
     solution = gaussian_elimination(system, rhs)
     return np.concatenate((a_terms[:, None], solution.reshape((num_splines, 3))), axis=1)
