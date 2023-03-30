@@ -61,6 +61,12 @@ def cubic(points: list[tuple[int, int]], boundary_condition=BoundaryConditions.N
                            3] = [0, 2, 6 * (end_x-start_x)]
                     rhs[offset + 2] = 0
 
+                case BoundaryConditions.NotAKnot:
+                    # TODO: TEST THIS
+                    # Third derivative at second from end knots is equal
+                    a_terms[1] = a_terms[0]
+                    a_terms[-2] = a_terms[-1]
+
                 case _:
                     raise NotImplementedError(
                         "Only natural boundary conditions are supported")
@@ -107,7 +113,8 @@ def gaussian_elimination(matrix: np.ndarray, rhs: np.ndarray) -> np.ndarray:
 
         augmented_matrix[:, row_index] = augmented_matrix[:,
                                                           row_index] * solution[row_index]
-        augmented_matrix[:, -1] = augmented_matrix[:, -1] - augmented_matrix[:, row_index]
+        augmented_matrix[:, -1] = augmented_matrix[:, -1] - \
+            augmented_matrix[:, row_index]
     return solution
 
 
@@ -119,7 +126,7 @@ def tests():
         [0, 3, 0, -1, 0],
         [0, 0, 0, 2, 6]
     ], dtype=np.float64), np.array([1, 2, 0, 0, 0], dtype=np.float64)).all() == np.array([3/4, 3/2, 3/4, 1/4, -1/4], dtype=np.float64).all()
-    
+
 
 if __name__ == "__main__":
     tests()
